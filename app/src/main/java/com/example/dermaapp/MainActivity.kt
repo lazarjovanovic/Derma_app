@@ -15,22 +15,18 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.MediaStore.Images
 import android.text.format.Formatter
-import android.text.format.Formatter.formatIpAddress
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.androidnetworking.AndroidNetworking
-import com.squareup.okhttp.MediaType
-import com.squareup.okhttp.OkHttpClient
-import com.squareup.okhttp.Request
-import com.squareup.okhttp.RequestBody
+import com.squareup.okhttp.*
 import it.sauronsoftware.ftp4j.FTPClient
 import kotlinx.android.synthetic.main.activity_main.*
+import okhttp3.MultipartBody
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.text.Format
-import java.util.*
+import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
@@ -107,7 +103,8 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == IMAGE_CAPTURE_MODE){
             image_view.setImageURI(image_uri)
-            uploadtoftp(image_uri)
+            //uploadtoftp(image_uri)
+            uploadToHttp(image_uri)
 
               // TEST HTTP 1
 //            val rd = RequestData("a", "e", "i")
@@ -165,16 +162,17 @@ class MainActivity : AppCompatActivity() {
         if (resultCode == Activity.RESULT_OK && requestCode == IMAGE_PICK_CODE){
             image_view.setImageURI(data?.data)
             image_uri = data?.data
-            uploadtoftp(image_uri)
+            //uploadtoftp(image_uri)
+            uploadToHttp(image_uri)
         }
     }
 
     //accessing camera
     private fun openCamera(){
         val values = ContentValues()
-        values.put(MediaStore.Images.Media.TITLE, "New image")
-        values.put(MediaStore.Images.Media.DESCRIPTION, "From camera")
-        image_uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        values.put(Images.Media.TITLE, "New image")
+        values.put(Images.Media.DESCRIPTION, "From camera")
+        image_uri = contentResolver.insert(Images.Media.EXTERNAL_CONTENT_URI, values)
 
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri)
@@ -240,13 +238,39 @@ class MainActivity : AppCompatActivity() {
         thread.start()
     }
 
+    fun uploadToHttp(image_uri: Uri?)
+    {
+        val path = getPath(image_uri)
+        val file = File(path.toString())
+        var url = "http://192.168.0.12:8004/do_POST"
+
+        val req = RequestBody.create(MediaType.parse("image/png"), file)
+
+        val request = Request.Builder()
+            .url(url)
+            .post(req)
+            .build()
+        val client = OkHttpClient()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(request: Request?, e: IOException?) {
+                println("Faild to execute request")
+            }
+
+            override fun onResponse(response: Response?) {
+                val body = response?.body()?.string()
+                println(body)
+            }
+        })
+    }
+
     fun getRealPathFromURI(uri: Uri?): String? {
         var path = ""
         if (contentResolver != null) {
             val cursor: Cursor? = contentResolver.query(uri!!, null, null, null, null)
             if (cursor != null) {
                 cursor.moveToFirst()
-                val idx: Int = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+                val idx: Int = cursor.getColumnIndex(Images.ImageColumns.DATA)
                 path = cursor.getString(idx)
                 cursor.close()
             }
@@ -264,11 +288,11 @@ class MainActivity : AppCompatActivity() {
 
     fun getPath(uri: Uri?): String? {
         val projection =
-            arrayOf(MediaStore.Images.Media.DATA)
+            arrayOf(Images.Media.DATA)
         val cursor =
             contentResolver.query(uri!!, projection, null, null, null)
                 ?: return null
-        val column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        val column_index = cursor.getColumnIndexOrThrow(Images.Media.DATA)
         cursor.moveToFirst()
         val s = cursor.getString(column_index)
         cursor.close()
