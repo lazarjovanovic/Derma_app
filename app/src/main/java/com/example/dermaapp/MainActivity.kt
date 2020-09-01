@@ -6,8 +6,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.Cursor
-import android.graphics.Bitmap
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -20,11 +18,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.androidnetworking.AndroidNetworking
 import com.squareup.okhttp.*
-import it.sauronsoftware.ftp4j.FTPClient
 import kotlinx.android.synthetic.main.activity_main.*
-import okhttp3.MultipartBody
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 
@@ -48,8 +43,10 @@ class MainActivity : AppCompatActivity() {
                     checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
                     checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED)
                 {
-                    val permission = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)
+                    val permission = arrayOf(
+                        Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET
+                    )
                     requestPermissions(permission, PERMISSION_CODE)
                 }
                 else{
@@ -65,7 +62,10 @@ class MainActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
                     //
-                    val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)
+                    val permissions = arrayOf(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.INTERNET
+                    )
                     requestPermissions(permissions, PERMISSION_CODE)
                 }
                 else{
@@ -78,19 +78,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode){
             PERMISSION_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    if (grantResults.size == 4){
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (grantResults.size == 4) {
                         openCamera()
                     }
-                    if (grantResults.size == 2){
+                    if (grantResults.size == 2) {
                         pickImageFromGallery()
                     }
-                }
-                else{
+                } else {
                     Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -137,13 +140,34 @@ class MainActivity : AppCompatActivity() {
         val file = File(path.toString())
         var url = "http://192.168.1.5:8004/do_POST"
 
+        val path_parts = path?.split("/")
+        val img_name = path_parts?.get(path_parts.size - 1)
+        val wm: WifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val ip_addr: String = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress())
+
+        val json_data = JSONObject()
+        json_data.put("username", "test_usr")
+        json_data.put("password", "test_pwd")
+        json_data.put("image", img_name)
+        json_data.put("method", "process")
+        json_data.put("ip", ip_addr)
+
+
+        val JSON = MediaType.parse("application/json; charset=utf-8")
+        val req_data = RequestBody.create(JSON, json_data.toString())
         val req = RequestBody.create(MediaType.parse("image/png"), file)
 
         val request = Request.Builder()
+            .addHeader("image", img_name)
+            .addHeader("username", "test_usr")
+            .addHeader("password", "test_pwd")
+            .addHeader("method", "process")
+            .addHeader("ip", ip_addr)
             .url(url)
             .post(req)
             .build()
         val client = OkHttpClient()
+
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(request: Request?, e: IOException?) {
