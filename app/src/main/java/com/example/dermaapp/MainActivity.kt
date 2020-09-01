@@ -138,7 +138,8 @@ class MainActivity : AppCompatActivity() {
     {
         val path = getPath(image_uri)
         val file = File(path.toString())
-        var url = "http://192.168.1.5:8004/do_POST"
+        val url = "http://192.168.1.5:8004/do_POST"
+        //val url = "http://178.220.24.126:8004/do_POST"
 
         val path_parts = path?.split("/")
         val img_name = path_parts?.get(path_parts.size - 1)
@@ -151,10 +152,7 @@ class MainActivity : AppCompatActivity() {
         json_data.put("image", img_name)
         json_data.put("method", "process")
         json_data.put("ip", ip_addr)
-
-
-        val JSON = MediaType.parse("application/json; charset=utf-8")
-        val req_data = RequestBody.create(JSON, json_data.toString())
+        
         val req = RequestBody.create(MediaType.parse("image/png"), file)
 
         val request = Request.Builder()
