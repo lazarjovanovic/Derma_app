@@ -22,6 +22,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
@@ -165,6 +166,9 @@ class MainActivity : AppCompatActivity() {
             .post(req)
             .build()
         val client = OkHttpClient()
+        client.setConnectTimeout(30, TimeUnit.SECONDS)
+        client.setWriteTimeout(60, TimeUnit.SECONDS)
+        client.setReadTimeout(60, TimeUnit.SECONDS)
 
 
         client.newCall(request).enqueue(object : Callback {
