@@ -146,13 +146,6 @@ class MainActivity : AppCompatActivity() {
         val img_name = path_parts?.get(path_parts.size - 1)
         val wm: WifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val ip_addr: String = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress())
-
-        val json_data = JSONObject()
-        json_data.put("username", "test_usr")
-        json_data.put("password", "test_pwd")
-        json_data.put("image", img_name)
-        json_data.put("method", "process")
-        json_data.put("ip", ip_addr)
         
         val req = RequestBody.create(MediaType.parse("image/png"), file)
 
