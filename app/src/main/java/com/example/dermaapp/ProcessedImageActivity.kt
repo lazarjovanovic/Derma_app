@@ -13,16 +13,35 @@ class ProcessedImageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_processed_image)
 
         val data = intent.getStringExtra("data")
-        val dicts_string = data?.substringAfter('[')?.substringBefore(']')
-        val dicts = dicts_string?.split(',')
-        //complete
+        val lists_string = data?.substringAfter('[')?.substringBeforeLast(']')
+        val items = lists_string?.split("; ")
+        var main_desease = ""
+        var main_description = ""
+        var main_validation = ""
+        var possibilities = ""
+        var i = 0
+        if (items != null) {
+            while (i < items.size) {
+                val pom_str = items[i]
+                val pom_str_parts = pom_str.substringAfter('[').substringBefore(']').split(", ")
+                if (i == 0)
+                {
+                    main_desease = pom_str_parts[0].plus(" - ").plus(pom_str_parts[1]).plus("%")
+                    main_description = pom_str_parts[2]
+                    main_validation = pom_str_parts[3]
+                }
+                else {
+                    possibilities = possibilities.plus(pom_str_parts[0]).plus(" - ").plus(pom_str_parts[1]).plus("%\n")
+                }
+                i += 1
+            }
+        }
         val image = intent.getStringExtra("image")
         val image_uri = Uri.parse(image);
         image_view.setImageURI(image_uri)
-        textViewDesease.text = "asdasdasfasfsafsafsafsafs"
-        textViewOthers.text = "others"
-        textViewDescription.text = "description"
-        textViewDiagnosticalProcedures.text = "procedures"
-        val x = 5
+        textViewDesease.text = main_desease.replace("\'", "")
+        textViewOthers.text = possibilities.replace("\'", "")
+        textViewDescription.text = main_description.replace("\'", "")
+        textViewDiagnosticalProcedures.text = main_validation.replace("\'", "")
     }
 }
