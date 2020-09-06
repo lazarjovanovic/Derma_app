@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+//import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.wifi.WifiManager
@@ -172,6 +173,10 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(response: Response?) {
                 val body = response?.body()?.string()
                 println(body)
+                val intent = Intent(this@MainActivity, ProcessedImageActivity::class.java)
+                intent.putExtra("data", body)
+                intent.putExtra("image", image_uri.toString())
+                startActivity(intent)
             }
         })
     }
