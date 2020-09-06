@@ -19,7 +19,7 @@ class ProcessedImageActivity : AppCompatActivity() {
         val image = intent.getStringExtra("image")
         val image_uri = Uri.parse(image);
         image_view.setImageURI(image_uri)
-        textViewDesease.text = "asdasdasfasfsafsafsafsafsafasfasfsafasfasfsafasfsafasfasfasfas"
+        textViewDesease.text = "asdasdasfasfsafsafsafsafs"
         textViewOthers.text = "others"
         textViewDescription.text = "description"
         textViewDiagnosticalProcedures.text = "procedures"
