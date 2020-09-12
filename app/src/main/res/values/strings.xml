@@ -7,4 +7,5 @@
     <string name="other_possibilities">Other possibilities:</string>
     <string name="main_desease_description">Main desease description:</string>
     <string name="validation_diagnostical_procedures">Validation diagnostical procedures:</string>
+    <string name="get_last_processed_images">Get last processed images</string>
 </resources>

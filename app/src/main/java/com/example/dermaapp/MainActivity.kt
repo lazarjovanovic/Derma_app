@@ -1,11 +1,11 @@
 package com.example.dermaapp
 
+//import android.content.Intent
 import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-//import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.wifi.WifiManager
@@ -20,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.androidnetworking.AndroidNetworking
 import com.squareup.okhttp.*
 import kotlinx.android.synthetic.main.activity_main.*
-import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
     private val PERMISSION_CODE = 1000
     private val IMAGE_CAPTURE_MODE = 1001
-    private val IMAGE_PICK_CODE = 1000
+    private val IMAGE_PICK_CODE = 1002
     var image_uri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +62,6 @@ class MainActivity : AppCompatActivity() {
         image_from_memory_btn.setOnClickListener{
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
-                    //
                     val permissions = arrayOf(
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.INTERNET
@@ -78,6 +76,20 @@ class MainActivity : AppCompatActivity() {
                 pickImageFromGallery()
             }
         }
+
+        get_processed_btn.setOnClickListener{
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if(checkSelfPermission(Manifest.permission.INTERNET) == PackageManager.PERMISSION_DENIED){
+                    val permissions = arrayOf(Manifest.permission.INTERNET)
+                    requestPermissions(permissions, PERMISSION_CODE)
+                }
+                getProcessedImages()
+            }
+            else{
+                getProcessedImages()
+            }
+        }
+
     }
 
     override fun onRequestPermissionsResult(
@@ -94,6 +106,9 @@ class MainActivity : AppCompatActivity() {
                     }
                     if (grantResults.size == 2) {
                         pickImageFromGallery()
+                    }
+                    if (grantResults.size == 1) {
+                        getProcessedImages()
                     }
                 } else {
                     Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
@@ -140,13 +155,13 @@ class MainActivity : AppCompatActivity() {
     {
         val path = getPath(image_uri)
         val file = File(path.toString())
-        val url = "http://192.168.1.5:8004/do_POST"
-        //val url = "http://178.220.24.126:8004/do_POST"
+        val url = "http://192.168.1.5:8004/do_PROCESS_REQUEST"
+        //val url = "http://178.220.24.126:8004/do_PROCESS_REQUEST"
 
         val path_parts = path?.split("/")
         val img_name = path_parts?.get(path_parts.size - 1)
         val wm: WifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val ip_addr: String = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress())
+        val ip_addr: String = Formatter.formatIpAddress(wm.connectionInfo.ipAddress)
         
         val req = RequestBody.create(MediaType.parse("image/png"), file)
 
@@ -177,6 +192,41 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("data", body)
                 intent.putExtra("image", image_uri.toString())
                 startActivity(intent)
+            }
+        })
+    }
+
+    fun getProcessedImages(){
+        val url = "http://192.168.1.5:8004/do_GET_PROCESSED"
+        //val url = "http://178.220.24.126:8004/do_GET_PROCESSED"
+
+        val wm: WifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val ip_addr: String = Formatter.formatIpAddress(wm.connectionInfo.ipAddress)
+
+        val req = FormEncodingBuilder().add("query", "SELECT * FROM REQUESTS WHERE username =").build()
+
+        val request = Request.Builder()
+            .addHeader("username", "test_usr")
+            .addHeader("password", "test_pwd")
+            .addHeader("method", "get_processed_images")
+            .addHeader("ip", ip_addr)
+            .url(url)
+            .post(req)
+            .build()
+        val client = OkHttpClient()
+        client.setConnectTimeout(30, TimeUnit.SECONDS)
+        client.setWriteTimeout(60, TimeUnit.SECONDS)
+        client.setReadTimeout(60, TimeUnit.SECONDS)
+
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(request: Request?, e: IOException?) {
+                println("Faild to execute request")
+            }
+
+            override fun onResponse(response: Response?) {
+                val body = response?.body()?.string()
+                println(body)
             }
         })
     }
