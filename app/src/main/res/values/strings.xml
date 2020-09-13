@@ -3,8 +3,19 @@
     <string name="capture_image">Capture image</string>
     <string name="todo">TODO</string>
     <string name="get_image_from_photos">Get image from Photos</string>
-    <string name="detected_desease">Detected desease:</string>
+    <string name="detected_disease">Detected disease:</string>
     <string name="other_possibilities">Other possibilities:</string>
-    <string name="main_desease_description">Main desease description:</string>
-    <string name="validation_diagnostical_procedures">Validation diagnostical procedures:</string>
+    <string name="main_disease_description">Main disease description:</string>
+    <string name="validation_diagnostic_procedures">Validation diagnostic procedures:</string>
+    <string name="title_activity_login">User registration</string>
+    <string name="prompt_username">Username</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_email">Not a valid email</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
 </resources>
