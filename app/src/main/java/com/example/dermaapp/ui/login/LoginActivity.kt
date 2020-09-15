@@ -2,6 +2,7 @@ package com.example.dermaapp.ui.login
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.lifecycle.Observer
@@ -21,6 +22,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import com.example.dermaapp.MainActivity
 
 import com.example.dermaapp.R
 
@@ -63,6 +65,19 @@ class LoginActivity : AppCompatActivity() {
                 //TODO: Set loading
                 //loading.isAnimating = true
                 LoginService.loginRequest(username.text.toString(), email.text.toString(), password.text.toString())
+
+                //Wait for response - TODO maybe some better approach
+                while(LoginService.returnMessage == "")
+                    Thread.sleep(2_000)
+
+                if(LoginService.returnMessage != "" && LoginService.returnMessage != "success") {
+                    Toast.makeText(this, LoginService.returnMessage, Toast.LENGTH_LONG).show()
+                }
+                else if(LoginService.returnMessage == "success") {
+                    intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
             }
         }
     }

@@ -1,15 +1,18 @@
 package com.example.dermaapp.ui.login
 
+import android.content.Context
 import android.os.Environment
 import android.util.Patterns
+import android.widget.Toast
 import com.example.dermaapp.R
 import com.squareup.okhttp.*
 import java.io.*
+import java.security.AccessController.getContext
 
 class LoginService {
-
     companion object {
         var url = "http://192.168.0.12:8004/"
+        var returnMessage = ""
         //var url = "http://192.168.1.5:8004/"
         fun loginDataValidation(username: String, email:String, password: String): LoginFormState {
             val state = LoginFormState()
@@ -70,11 +73,16 @@ class LoginService {
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(request: Request?, e: IOException?) {
                     println("Faild to execute request")
+                    returnMessage = "Failed to login. Please check your internet connection"
                 }
 
                 override fun onResponse(response: Response?) {
                     val body = response?.body()?.string()
                     println(body)
+                    if(body == null || body == "")
+                        returnMessage = "Username or email already exist!"
+                    else
+                        returnMessage = "success"
 
                     //in file userId.txt write user hashId from server, as proof that user is registered
                     val fileName = "userId.txt"
