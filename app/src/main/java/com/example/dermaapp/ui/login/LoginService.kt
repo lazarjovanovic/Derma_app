@@ -8,12 +8,13 @@ import com.example.dermaapp.R
 import com.squareup.okhttp.*
 import java.io.*
 import java.security.AccessController.getContext
+import java.util.concurrent.TimeUnit
 
 class LoginService {
     companion object {
-        var url = "http://192.168.0.12:8004/"
+        var url = "http://192.168.1.5:8004/"
+        //var url = "http://192.168.0.12:8004/"
         var returnMessage = ""
-        //var url = "http://192.168.1.5:8004/"
         fun loginDataValidation(username: String, email:String, password: String): LoginFormState {
             val state = LoginFormState()
             if (!isUserNameValid(username)) {
@@ -70,6 +71,9 @@ class LoginService {
                 .build()
 
             val client = OkHttpClient()
+            client.setConnectTimeout(30, TimeUnit.SECONDS)
+            client.setWriteTimeout(60, TimeUnit.SECONDS)
+            client.setReadTimeout(60, TimeUnit.SECONDS)
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(request: Request?, e: IOException?) {
                     println("Faild to execute request")

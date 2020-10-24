@@ -197,8 +197,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getProcessedImages(){
-        val url = "http://192.168.1.5:8004/do_GET_PROCESSED"
-        //val url = "http://178.220.24.126:8004/do_GET_PROCESSED"
+        //val url = "http://192.168.1.5:8004/do_GET_PROCESSED"
+        val url = "http://192.168.0.17:8004/do_GET_PROCESSED"
 
         val wm: WifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val ip_addr: String = Formatter.formatIpAddress(wm.connectionInfo.ipAddress)
